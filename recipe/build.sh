@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $PY_VER != 3.4 ]; then
+if [ $PY_VER != 3.5 ]; then
     echo "PY_VER: $PY_VER"
-    echo "Please use conda-build with --python=3.4 option"
+    echo "Please use conda-build with --python=3.5 option"
     exit 1
 fi
 
@@ -20,6 +20,11 @@ unset PYTHON
 if [ `uname` == Darwin ]; then
     ./configure --enable-shared --enable-ipv6 --with-ensurepip=no \
         --prefix=$PREFIX
+    # see https://bugs.python.org/issue24844
+    replace \
+        '#define HAVE_BUILTIN_ATOMIC 1' \
+        '/* #define HAVE_BUILTIN_ATOMIC 1 */' \
+        pyconfig.h
 fi
 if [ `uname` == Linux ]; then
     ./configure --enable-shared --enable-ipv6 --with-ensurepip=no \
@@ -34,30 +39,30 @@ make
 make install
 
 pushd $PREFIX/bin
-ln -s python3.4 python
-ln -s pydoc3.4 pydoc
+ln -s python3.5 python
+ln -s pydoc3.5 pydoc
 popd
 
 export PYTHON=$PYTHON_BAK
 
 if [ `uname` == Darwin ]; then
     DYNLOAD_DIR=$STDLIB_DIR/lib-dynload
-    rm $DYNLOAD_DIR/_hashlib_failed.so
-    rm $DYNLOAD_DIR/_ssl_failed.so
+    rm $DYNLOAD_DIR/_hashlib.cpython-35m-darwin_failed.so
+    rm $DYNLOAD_DIR/_ssl.cpython-35m-darwin_failed.so
     pushd Modules
     rm -rf build
     cp $RECIPE_DIR/setup_misc.py .
     $PYTHON setup_misc.py build
-    cp build/lib.macosx-*/_hashlib.so \
-       build/lib.macosx-*/_ssl.so \
+    cp build/lib.macosx-*/_hashlib.cpython-35m-darwin.so \
+       build/lib.macosx-*/_ssl.cpython-35m-darwin.so \
            $DYNLOAD_DIR
     popd
     pushd $DYNLOAD_DIR
-    mv readline_failed.so readline.so
-    mv _lzma_failed.so _lzma.so
+    mv readline.cpython-35m-darwin_failed.so readline.cpython-35m-darwin.so
+    mv _lzma.cpython-35m-darwin_failed.so _lzma.cpython-35m-darwin.so
     popd
 fi
 
 replace '-Werror=declaration-after-statement' '' \
-    $PREFIX/lib/python3.4/_sysconfigdata.py \
-    $PREFIX/lib/python3.4/config-3.4m/Makefile
+    $PREFIX/lib/python3.5/_sysconfigdata.py \
+    $PREFIX/lib/python3.5/config-3.5m/Makefile

@@ -1,8 +1,8 @@
-diff --git Include/pythonrun.h Include/pythonrun.h
-index 4d24b2d..d545d55 100644
---- Include/pythonrun.h
-+++ Include/pythonrun.h
-@@ -218,6 +218,7 @@ int _Py_CheckPython3();
+diff --git Include/pylifecycle.h Include/pylifecycle.h
+index ccdebe2..9b181f2 100644
+--- Include/pylifecycle.h
++++ Include/pylifecycle.h
+@@ -63,6 +63,7 @@ int _Py_CheckPython3();
  #endif
  
  /* In their own files */
@@ -11,22 +11,22 @@ index 4d24b2d..d545d55 100644
  PyAPI_FUNC(const char *) Py_GetPlatform(void);
  PyAPI_FUNC(const char *) Py_GetCopyright(void);
 diff --git Lib/platform.py Lib/platform.py
-index b653822..3f0614a 100755
+index d58494c..0964f95 100755
 --- Lib/platform.py
 +++ Lib/platform.py
-@@ -1135,6 +1135,7 @@ def processor():
+@@ -1147,6 +1147,7 @@ def processor():
  
  _sys_version_parser = re.compile(
-     r'([\w.+]+)\s*'
-+    '\|[^|]*\|\s*' # version extra
-     '\(#?([^,]+),\s*([\w ]+),\s*([\w :]+)\)\s*'
-     '\[([^\]]+)\]?', re.ASCII)
- 
+     r'([\w.+]+)\s*'  # "version<space>"
++    r'(?:\|[^|]*\|)?\s*' # version extra
+     r'\(#?([^,]+)'  # "(#buildno"
+     r'(?:,\s*([\w ]*)'  # ", builddate"
+     r'(?:,\s*([\w :]*))?)?\)\s*'  # ", buildtime)<space>"
 diff --git Modules/main.c Modules/main.c
-index a16ce65..332a31d 100644
+index e4c955e..dea19f2 100644
 --- Modules/main.c
 +++ Modules/main.c
-@@ -493,7 +493,8 @@ Py_Main(int argc, wchar_t **argv)
+@@ -502,7 +502,8 @@ Py_Main(int argc, wchar_t **argv)
          return usage(0, argv[0]);
  
      if (version) {
@@ -37,7 +37,7 @@ index a16ce65..332a31d 100644
      }
  
 diff --git Python/getversion.c Python/getversion.c
-index 7bd6efd..46bbd67 100644
+index 7bd6efd..0eff5e6 100644
 --- Python/getversion.c
 +++ Python/getversion.c
 @@ -2,14 +2,55 @@
@@ -52,7 +52,7 @@ index 7bd6efd..46bbd67 100644
 +#ifdef MS_WIN32
 +#define STDLIB_DIR  L"\\Lib\\"
 +#else
-+#define STDLIB_DIR  L"/lib/python3.4/"
++#define STDLIB_DIR  L"/lib/python3.5/"
 +#endif
 +
 +const char *
