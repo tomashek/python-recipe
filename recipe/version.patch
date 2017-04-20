@@ -2,7 +2,7 @@ diff --git Include/pylifecycle.h Include/pylifecycle.h
 index ccdebe2..9b181f2 100644
 --- Include/pylifecycle.h
 +++ Include/pylifecycle.h
-@@ -63,6 +63,7 @@ int _Py_CheckPython3();
+@@ -64,6 +64,7 @@ int _Py_CheckPython3();
  #endif
  
  /* In their own files */
@@ -14,7 +14,7 @@ diff --git Lib/platform.py Lib/platform.py
 index d58494c..0964f95 100755
 --- Lib/platform.py
 +++ Lib/platform.py
-@@ -1147,6 +1147,7 @@ def processor():
+@@ -1087,6 +1087,7 @@ def processor():
  
  _sys_version_parser = re.compile(
      r'([\w.+]+)\s*'  # "version<space>"
@@ -26,11 +26,11 @@ diff --git Modules/main.c Modules/main.c
 index e4c955e..dea19f2 100644
 --- Modules/main.c
 +++ Modules/main.c
-@@ -502,7 +502,8 @@ Py_Main(int argc, wchar_t **argv)
+@@ -532,7 +532,8 @@ Py_Main(int argc, wchar_t **argv)
          return usage(0, argv[0]);
  
      if (version) {
--        printf("Python %s\n", PY_VERSION);
+-        printf("Python %s\n", version >= 2 ? Py_GetVersion() : PY_VERSION);
 +        Py_SetProgramName(argv[0]);
 +        fprintf(stderr, "Python %s :: %s\n", PY_VERSION, Anaconda_GetVersion());
          return 0;
@@ -52,7 +52,7 @@ index 7bd6efd..0eff5e6 100644
 +#ifdef MS_WIN32
 +#define STDLIB_DIR  L"\\Lib\\"
 +#else
-+#define STDLIB_DIR  L"/lib/python3.5/"
++#define STDLIB_DIR  L"/lib/python3.6/"
 +#endif
 +
 +const char *

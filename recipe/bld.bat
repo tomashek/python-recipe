@@ -26,11 +26,11 @@ if errorlevel 1 exit 1
 copy /Y %SRC_DIR%\PC\pyconfig.h %PREFIX%\include\
 if errorlevel 1 exit 1
 
-for %%x in (python35.dll python.exe pythonw.exe python.pdb python35.pdb pythonw.pdb) do (
+for %%x in (python36.dll python.exe pythonw.exe python.pdb python36.pdb pythonw.pdb) do (
     copy /Y %SRC_DIR%\PCbuild\%%x %PREFIX%
     if errorlevel 1 exit 1
 )
-copy /Y %SRC_DIR%\PCbuild\python35.lib %PREFIX%\libs\
+copy /Y %SRC_DIR%\PCbuild\python36.lib %PREFIX%\libs\
 if errorlevel 1 exit 1
 
 del %PREFIX%\libs\libpython*.a
