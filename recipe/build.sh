@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $PY_VER != 3.5 ]; then
+if [ $PY_VER != 3.6 ]; then
     echo "PY_VER: $PY_VER"
-    echo "Please use conda-build with --python=3.5 option"
+    echo "Please use conda-build with --python=3.6 option"
     exit 1
 fi
 
@@ -12,6 +12,7 @@ rm -rf Lib/ensurepip
 if [ `uname` == Darwin ]; then
     export CFLAGS="-I$PREFIX/include $CFLAGS"
     export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
+    export MACOSX_DEPLOYMENT_TARGET="10.9"
 fi
 
 PYTHON_BAK=$PYTHON
@@ -21,10 +22,10 @@ if [ `uname` == Darwin ]; then
     ./configure --enable-shared --enable-ipv6 --with-ensurepip=no \
         --prefix=$PREFIX
     # see https://bugs.python.org/issue24844
-    replace \
-        '#define HAVE_BUILTIN_ATOMIC 1' \
-        '/* #define HAVE_BUILTIN_ATOMIC 1 */' \
-        pyconfig.h
+#    replace \
+#        '#define HAVE_BUILTIN_ATOMIC 1' \
+#        '/* #define HAVE_BUILTIN_ATOMIC 1 */' \
+#        pyconfig.h
 fi
 if [ `uname` == Linux ]; then
     ./configure --enable-shared --enable-ipv6 --with-ensurepip=no \
@@ -39,30 +40,34 @@ make
 make install
 
 pushd $PREFIX/bin
-ln -s python3.5 python
-ln -s pydoc3.5 pydoc
+ln -s python3.6 python
+ln -s pydoc3.6 pydoc
 popd
 
 export PYTHON=$PYTHON_BAK
 
+DYNLOAD_DIR=$PREFIX/lib/python3.6/lib-dynload
 if [ `uname` == Darwin ]; then
-    DYNLOAD_DIR=$STDLIB_DIR/lib-dynload
-    rm $DYNLOAD_DIR/_hashlib.cpython-35m-darwin_failed.so
-    rm $DYNLOAD_DIR/_ssl.cpython-35m-darwin_failed.so
+    rm $DYNLOAD_DIR/_hashlib.cpython-36m-darwin_failed.so
+    rm $DYNLOAD_DIR/_ssl.cpython-36m-darwin_failed.so
     pushd Modules
     rm -rf build
     cp $RECIPE_DIR/setup_misc.py .
     $PYTHON setup_misc.py build
-    cp build/lib.macosx-*/_hashlib.cpython-35m-darwin.so \
-       build/lib.macosx-*/_ssl.cpython-35m-darwin.so \
+    cp build/lib.macosx-*/_hashlib.cpython-36m-darwin.so \
+       build/lib.macosx-*/_ssl.cpython-36m-darwin.so \
            $DYNLOAD_DIR
     popd
     pushd $DYNLOAD_DIR
-    mv readline.cpython-35m-darwin_failed.so readline.cpython-35m-darwin.so
-    mv _lzma.cpython-35m-darwin_failed.so _lzma.cpython-35m-darwin.so
+    mv readline.cpython-36m-darwin_failed.so readline.cpython-36m-darwin.so
+    mv _lzma.cpython-36m-darwin_failed.so _lzma.cpython-36m-darwin.so
     popd
+    replace \
+	"'MACOSX_DEPLOYMENT_TARGET': '10.9'" \
+	"'MACOSX_DEPLOYMENT_TARGET': '10.7'" \
+	$PREFIX/lib/python3.6/_sysconfigdata_m_darwin_darwin.py
+    replace \
+	"MACOSX_DEPLOYMENT_TARGET=10.9" \
+	"MACOSX_DEPLOYMENT_TARGET=10.7" \
+	$PREFIX/lib/python3.6/config-3.6m-darwin/Makefile
 fi
-
-replace '-Werror=declaration-after-statement' '' \
-    $PREFIX/lib/python3.5/_sysconfigdata.py \
-    $PREFIX/lib/python3.5/config-3.5m/Makefile

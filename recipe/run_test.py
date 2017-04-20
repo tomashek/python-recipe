@@ -1,8 +1,8 @@
 import os
 from os.path import dirname, isfile, join
 # make sure Grammar pickle files are present
-for fn in ('Grammar3.5.2.final.0.pickle',
-           'PatternGrammar3.5.2.final.0.pickle'):
+for fn in ('Grammar3.6.1.final.0.pickle',
+           'PatternGrammar3.6.1.final.0.pickle'):
     assert isfile(join(dirname(os.__file__), 'lib2to3', fn))
 
 import platform
@@ -27,8 +27,8 @@ if sys.platform == 'win32':
 print('sys.maxunicode:', sys.maxunicode)
 print('platform.architecture:', platform.architecture())
 print('platform.python_version:', platform.python_version())
-assert platform.python_version() == '3.5.2'
-assert sys.version_info[:3] == (3, 5, 2)
+assert platform.python_version() == '3.6.1'
+assert sys.version_info[:3] == (3, 6, 1)
 
 import _bisect
 import _codecs_cn
@@ -65,6 +65,7 @@ import binascii
 import bz2
 import cmath
 import datetime
+import hashlib
 import itertools
 import lzma
 import math
@@ -78,6 +79,21 @@ import time
 import unicodedata
 import zlib
 from os import urandom
+
+for mode, res in [
+    ('md5', 'd41d8cd98f00b204e9800998ecf8427e'),
+    ('sha1', 'da39a3ee5e6b4b0d3255bfef95601890afd80709'),
+    ('sha224', 'd14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f'),
+    ('sha256', 'e3b0c44298fc1c149afbf4c8996fb924'
+               '27ae41e4649b934ca495991b7852b855'),
+    ('sha384', '38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf'
+               '63f6e1da274edebfe76f65fbd51ad2f14898b95b'),
+    ('sha512', 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921'
+               'd36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81'
+               'a538327af927da3e'),
+    ]:
+    h = hashlib.new(mode)
+    assert h.hexdigest() == res
 
 t = 100 * b'Foo '
 assert lzma.decompress(lzma.compress(t)) == t
@@ -116,4 +132,4 @@ if not (armv6l or armv7l or ppc64le):
 
 print('OPENSSL_VERSION:', ssl.OPENSSL_VERSION)
 if sys.platform != 'win32':
-    assert '1.0.2j' in ssl.OPENSSL_VERSION
+    assert '1.0.2k' in ssl.OPENSSL_VERSION
