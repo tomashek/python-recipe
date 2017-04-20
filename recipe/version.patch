@@ -1,9 +1,9 @@
-diff --git Include/pylifecycle.h Include/pylifecycle.h
-index ccdebe2..9b181f2 100644
---- Include/pylifecycle.h
-+++ Include/pylifecycle.h
-@@ -63,6 +63,7 @@ int _Py_CheckPython3();
- #endif
+diff --git Include/pythonrun.h Include/pythonrun.h
+index 6bfc175..c428f54 100644
+--- Include/pythonrun.h
++++ Include/pythonrun.h
+@@ -106,6 +106,7 @@ PyAPI_FUNC(char *) Py_GetExecPrefix(void);
+ PyAPI_FUNC(char *) Py_GetPath(void);
  
  /* In their own files */
 +PyAPI_FUNC(const char *) Anaconda_GetVersion(void);
@@ -11,48 +11,44 @@ index ccdebe2..9b181f2 100644
  PyAPI_FUNC(const char *) Py_GetPlatform(void);
  PyAPI_FUNC(const char *) Py_GetCopyright(void);
 diff --git Lib/platform.py Lib/platform.py
-index d58494c..0964f95 100755
+index d20c39d..98979fd 100755
 --- Lib/platform.py
 +++ Lib/platform.py
-@@ -1147,6 +1147,7 @@ def processor():
+@@ -1324,6 +1324,7 @@ def processor():
  
  _sys_version_parser = re.compile(
-     r'([\w.+]+)\s*'  # "version<space>"
-+    r'(?:\|[^|]*\|)?\s*' # version extra
-     r'\(#?([^,]+)'  # "(#buildno"
-     r'(?:,\s*([\w ]*)'  # ", builddate"
-     r'(?:,\s*([\w :]*))?)?\)\s*'  # ", buildtime)<space>"
+     r'([\w.+]+)\s*'
++    '\|[^|]*\|\s*' # version extra
+     '\(#?([^,]+),\s*([\w ]+),\s*([\w :]+)\)\s*'
+     '\[([^\]]+)\]?')
+ 
 diff --git Modules/main.c Modules/main.c
-index e4c955e..dea19f2 100644
+index 135ef6e..b9b9a5c 100644
 --- Modules/main.c
 +++ Modules/main.c
-@@ -502,7 +502,8 @@ Py_Main(int argc, wchar_t **argv)
+@@ -441,7 +441,8 @@ Py_Main(int argc, char **argv)
          return usage(0, argv[0]);
  
      if (version) {
--        printf("Python %s\n", PY_VERSION);
+-        fprintf(stderr, "Python %s\n", PY_VERSION);
 +        Py_SetProgramName(argv[0]);
 +        fprintf(stderr, "Python %s :: %s\n", PY_VERSION, Anaconda_GetVersion());
          return 0;
      }
  
 diff --git Python/getversion.c Python/getversion.c
-index 7bd6efd..0eff5e6 100644
+index 7bd6efd..643c968 100644
 --- Python/getversion.c
 +++ Python/getversion.c
-@@ -2,14 +2,55 @@
- /* Return the full version string. */
+@@ -5,11 +5,52 @@
  
- #include "Python.h"
--
-+#include "osdefs.h"
  #include "patchlevel.h"
  
 +
 +#ifdef MS_WIN32
-+#define STDLIB_DIR  L"\\Lib\\"
++#define STDLIB_DIR  "\\Lib\\"
 +#else
-+#define STDLIB_DIR  L"/lib/python3.5/"
++#define STDLIB_DIR  "/lib/python2.6/"
 +#endif
 +
 +const char *
@@ -60,13 +56,13 @@ index 7bd6efd..0eff5e6 100644
 +{
 +    static char res[128];
 +    FILE *f;
-+    wchar_t path[MAXPATHLEN+1];
++    char path[256];
 +    int c, i;
 +
-+    wcscpy(path, Py_GetPrefix());
-+    wcscat(path, STDLIB_DIR L"version.txt");
++    PyOS_snprintf(path, sizeof(path), "%s" STDLIB_DIR "version.txt",
++                  Py_GetPrefix());
 +
-+    f = _Py_wfopen(path, L"rb");
++    f = fopen(path, "rb");
 +    if (f == NULL) {
 +        strcpy(res, "Continuum Analytics, Inc.");
 +    }

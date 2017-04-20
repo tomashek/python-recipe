@@ -1,16 +1,15 @@
 diff --git Lib/distutils/spawn.py Lib/distutils/spawn.py
-index 5dd415a..ce85901 100644
+index e5654ff..2a29c92 100644
 --- Lib/distutils/spawn.py
 +++ Lib/distutils/spawn.py
-@@ -176,17 +176,16 @@ def find_executable(executable, path=None):
+@@ -184,18 +184,19 @@ def find_executable(executable, path=None):
+     """
+     if path is None:
          path = os.environ['PATH']
- 
-     paths = path.split(os.pathsep)
--    base, ext = os.path.splitext(executable)
--
--    if (sys.platform == 'win32') and (ext != '.exe'):
+-    paths = string.split(path, os.pathsep)
+-    (base, ext) = os.path.splitext(executable)
+-    if (sys.platform == 'win32' or os.name == 'os2') and (ext != '.exe'):
 -        executable = executable + '.exe'
--
 -    if not os.path.isfile(executable):
 -        for p in paths:
 -            f = os.path.join(p, executable)
@@ -20,6 +19,7 @@ index 5dd415a..ce85901 100644
 -        return None
 -    else:
 -        return executable
++    paths = path.split(os.pathsep)
 +
 +    for ext in '.exe', '.bat', '':
 +        newexe = executable + ext
@@ -33,3 +33,5 @@ index 5dd415a..ce85901 100644
 +                    # the file exists, we have a shot at spawn working
 +                    return f
 +    return None
+ 
+ # find_executable()

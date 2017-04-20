@@ -1,56 +1,51 @@
+# This is legacy recipe, which has not been tested using conda-build.
+# See: https://github.com/ContinuumIO/anaconda-recipes/blob/master/LEGACY.md
+
 package:
   name: python
-  version: 3.5.2
+  version: 2.6.9
 
 source:
-  fn: Python-3.5.2.tgz
-  url: https://www.python.org/ftp/python/3.5.2/Python-3.5.2.tgz
-  md5: 3fe8434643a78630c61c6464fe2e7e72
+  fn: Python-2.6.9.tgz
+  md5: bddbd64bf6f5344fc55bbe49a72fe4f3
   patches:
     - version.patch
-    - site.patch
-    - osx64-dist.patch      [osx and x86_64]
-    - win-find_exe.patch    [win]
-    - win-library_bin.patch [win]
+    - osx-site.patch      [osx]
+    - osx-dist.patch      [osx]
+    - win-find_exe.patch  [win]
+    - win-cygwin.patch    [win]
 
 build:
-  number: 0
-  no_link:
-    - bin/python3.5         [unix]
-    - DLLs/_ctypes.pyd      [win]
-  track_features:
-    - vc14                  [win]
+  number: 1
+  no_softlink: bin/python
 
 requirements:
   build:
-    - bzip2                 [unix]
-    - zlib 1.2.*            [unix]
-    - sqlite 3.13.*         [unix]
-    - readline 6.2          [unix and x86]
-    - tk 8.5.18             [unix and x86]
-    - openssl 1.0.2*        [unix]
-    - xz 5.2.*              [unix]
+    - bzip2      [unix]
+    - zlib       [unix]
+    - sqlite     [unix]
+    - readline   [unix]
+    - tk         [unix]
+    - openssl    [unix]
   run:
-    - zlib 1.2.*            [unix]
-    - sqlite 3.13.*         [unix]
-    - readline 6.2          [unix and x86]
-    - tk 8.5.18             [unix and x86]
-    - openssl 1.0.2*        [unix]
-    - xz 5.2.*              [unix]
-    - vs2015_runtime        [win]
+    - zlib       [unix]
+    - sqlite     [unix]
+    - readline   [unix]
+    - tk         [unix]
+    - openssl    [unix]
+    - vs2008_runtime  [win]
 
 test:
   commands:
-    - python -V               [unix]
-    - python3 -V              [unix]
+    - python -V              [unix]
     - pydoc -h
-    - python3-config --help   [unix]
+    - python-config --help   [unix]
 
 about:
   home: http://www.python.org/
   license: PSF
   license_file: LICENSE
-  summary: general purpose programming language
+  summary: General purpose programming language
   description: |
     Python is a widely used high-level, general-purpose, interpreted, dynamic
     programming language. Its design philosophy emphasizes code
