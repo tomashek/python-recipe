@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $PY_VER != 3.5 ]; then
+if [ $PY_VER != 2.7 ]; then
     echo "PY_VER: $PY_VER"
-    echo "Please use conda-build with --python=3.5 option"
+    echo "Please use conda-build with --python=2.7 option"
     exit 1
 fi
 
@@ -14,55 +14,50 @@ if [ `uname` == Darwin ]; then
     export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
 fi
 
-PYTHON_BAK=$PYTHON
-unset PYTHON
+if [ $DEBUG == 1 ]; then
+    DOPT="--with-pydebug"
+fi
 
 if [ `uname` == Darwin ]; then
-    ./configure --enable-shared --enable-ipv6 --with-ensurepip=no \
+    ./configure --enable-shared --enable-ipv6 --enable-unicode=ucs2 $DOPT \
         --prefix=$PREFIX
-    # see https://bugs.python.org/issue24844
-    replace \
-        '#define HAVE_BUILTIN_ATOMIC 1' \
-        '/* #define HAVE_BUILTIN_ATOMIC 1 */' \
-        pyconfig.h
 fi
+
 if [ `uname` == Linux ]; then
-    ./configure --enable-shared --enable-ipv6 --with-ensurepip=no \
+    export CC=gcc
+    export CPPFLAGS="-I$PREFIX/include"
+    export LDFLAGS="$LDFLAGS -L$PREFIX/lib -Wl,-rpath=$PREFIX/lib,--no-as-needed"
+    ./configure --enable-shared --enable-ipv6 --enable-unicode=ucs4 $DOPT \
         --prefix=$PREFIX \
         --with-tcltk-includes="-I$PREFIX/include" \
-        --with-tcltk-libs="-L$PREFIX/lib -ltcl8.5 -ltk8.5" \
-        CPPFLAGS="-I$PREFIX/include" \
-        LDFLAGS="-L$PREFIX/lib -Wl,-rpath=$PREFIX/lib,--no-as-needed"
+        --with-tcltk-libs="-L$PREFIX/lib -ltcl8.5 -ltk8.5"
 fi
 
 make
 make install
 
-pushd $PREFIX/bin
-ln -s python3.5 python
-ln -s pydoc3.5 pydoc
-popd
-
-export PYTHON=$PYTHON_BAK
-
+DYNLOAD_DIR=$PREFIX/lib/python2.7/lib-dynload
 if [ `uname` == Darwin ]; then
-    DYNLOAD_DIR=$STDLIB_DIR/lib-dynload
-    rm $DYNLOAD_DIR/_hashlib.cpython-35m-darwin_failed.so
-    rm $DYNLOAD_DIR/_ssl.cpython-35m-darwin_failed.so
+    mv $DYNLOAD_DIR/readline_failed.so $DYNLOAD_DIR/readline.so
+    rm $DYNLOAD_DIR/_hashlib_failed.so
+    rm $DYNLOAD_DIR/_ssl_failed.so
     pushd Modules
     rm -rf build
-    cp $RECIPE_DIR/setup_misc.py .
-    $PYTHON setup_misc.py build
-    cp build/lib.macosx-*/_hashlib.cpython-35m-darwin.so \
-       build/lib.macosx-*/_ssl.cpython-35m-darwin.so \
-           $DYNLOAD_DIR
-    popd
-    pushd $DYNLOAD_DIR
-    mv readline.cpython-35m-darwin_failed.so readline.cpython-35m-darwin.so
-    mv _lzma.cpython-35m-darwin_failed.so _lzma.cpython-35m-darwin.so
+    cp $RECIPE_DIR/setup_osx.py .
+    $PYTHON setup_osx.py build
+    cp build/lib.macosx-*/_hashlib.so \
+        build/lib.macosx-*/_ssl.so \
+        $DYNLOAD_DIR
     popd
 fi
 
-replace '-Werror=declaration-after-statement' '' \
-    $PREFIX/lib/python3.5/_sysconfigdata.py \
-    $PREFIX/lib/python3.5/config-3.5m/Makefile
+if [ `uname` == Linux ]; then
+    pushd $PREFIX/bin
+    rm python2-config python-config
+    mv python2.7-config python-config
+    popd
+fi
+
+if [ `uname -m` == ppc64le ]; then
+    cp $HOME/py27/readline.so $DYNLOAD_DIR/
+fi
