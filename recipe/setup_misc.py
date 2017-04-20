@@ -1,4 +1,4 @@
-# used to build the tk interface on 64-bit darwin
+# used to build the tk interface and other extensions on 64-bit darwin
 import sys
 from distutils.core import setup, Extension
 
