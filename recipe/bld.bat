@@ -43,7 +43,7 @@ REM ========== bytecode compile standard library
 rd /s /q %STDLIB_DIR%\lib2to3\tests\
 if errorlevel 1 exit 1
 
-%PYTHON% -Wi %STDLIB_DIR%\compileall.py -f -q -x "bad_coding|badsyntax|py2_" %STDLIB_DIR%
+%PREFIX%\python.exe -Wi %STDLIB_DIR%\compileall.py -f -q -x "bad_coding|badsyntax|py2_" %STDLIB_DIR%
 if errorlevel 1 exit 1
 
 REM ========== add scripts
@@ -60,4 +60,4 @@ copy /Y %SRC_DIR%\Tools\scripts\2to3 %SCRIPTS%
 if errorlevel 1 exit 1
 
 REM ========== generate grammar files for 2to3
-%PYTHON% %SCRIPTS%\2to3 -l
+%PREFIX%\python.exe %SCRIPTS%\2to3 -l
